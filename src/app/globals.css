@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/* Design tokens. The page is a deliberate dark / light story (dark, curved flip to light, back to dark),
+   so sections choose their surface explicitly instead of following prefers-color-scheme. */
+:root {
+  --ink: #0b0c10;
+  --ink-2: #14161c;
+  --paper: #f1f2f5;
+  --fog: #e4e2e8;
+  --muted: #8e8c95;
+  --accent: #ff5b14;
+  --on-accent: #0b0c10;
+  color-scheme: dark;
+}
+
+/* Accent is still being decided between orange and blue; flip with <html data-accent="blue">. */
+:root[data-accent="blue"] {
+  --accent: #2f5bff;
+  --on-accent: #f1f2f5;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-paper: var(--paper);
+  --color-fog: var(--fog);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-poster: var(--font-archivo);
+}
+
+/* Poster display type: Archivo at its narrowest width, black weight. */
+@utility poster-type {
+  font-family: var(--font-poster), "Arial Narrow", sans-serif;
+  font-stretch: 62%;
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+}
+
+@utility surface-dark {
+  background-color: var(--ink);
+  color: var(--paper);
+}
+
+@utility surface-light {
+  background-color: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
