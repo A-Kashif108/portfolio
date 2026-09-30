@@ -163,11 +163,13 @@ export function initChoreo(root: HTMLElement, state: XpState): () => void {
     gsap.set(words, { "--f": R ? 1 : 0 });
 
     if (!R) {
-      const h1Split = SplitText.create(".fu-h1", { type: "lines", mask: "lines" });
       const heroIn = (tl: gsap.core.Timeline, at: number) => {
+        // Split only when the intro plays; otherwise the server-rendered heading paints instantly (LCP).
+        const h1Split = SplitText.create(".fu-h1", { type: "lines", mask: "lines" });
         tl.from(h1Split.lines, { yPercent: 110, duration: 1.1, ease: "expo.out", stagger: 0.09 }, at)
-          .from(".fu-role", { y: 18, autoAlpha: 0, duration: 0.8, ease: "power3.out" }, at + 0.25)
-          .from(".fu-ctas", { y: 18, autoAlpha: 0, duration: 0.8, ease: "power3.out" }, at + 0.35)
+          // Slide only (no fade): the glass window already reveals them, and text is never mid-opacity (contrast).
+          .from(".fu-role", { y: 26, duration: 0.9, ease: "power3.out" }, at + 0.25)
+          .from(".fu-ctas", { y: 26, duration: 0.9, ease: "power3.out" }, at + 0.35)
           .from(nav, { autoAlpha: 0, duration: 0.6 }, at + 0.1);
       };
 
@@ -181,7 +183,8 @@ export function initChoreo(root: HTMLElement, state: XpState): () => void {
           lenis.stop();
           introStopped = true;
         }
-        const chars = SplitText.create(iname, { type: "chars" }).chars;
+        // Words then chars, so the name only ever wraps between words.
+        const chars = SplitText.create(iname, { type: "words,chars" }).chars;
         const vw0 = window.innerWidth;
         const vh0 = window.innerHeight;
         const ph = Math.min(vh0 * 0.56, 540);

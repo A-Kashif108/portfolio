@@ -234,7 +234,25 @@ Screenshots, recordings and downloaded source are in the session scratchpad unde
 - Content change: the stack ribbons and phone layers now reflect Curie Money work (Flutter, Dart, TypeScript BFF, UPI, Kotlin, Swift, Go) instead of the college stack. Needs Kashif's confirmation.
 - Checked in the browser: desktop and mobile, reduced motion, production routes (the capture page 404s in production), and deep links and back navigation to `#work` and `#contact`.
 
-Next: step 3, the quality pass (performance audit, Safari/iOS, accessibility, SEO metadata, OG image, favicon, sitemap).
+**Step 3 (quality pass) complete, 2026-09-30.**
+
+Lighthouse, on the production build:
+
+| Page | Performance | Accessibility | Best practices | SEO |
+|---|---|---|---|---|
+| Home, desktop | 100 | 100 | 100 | 100 |
+| Home, mobile | 88–92 | 100 | 100 | 100 |
+| Case study, desktop | 100 | 100 | 100 | 100 |
+| Case study, mobile | 96 | 100 | 100 | 100 |
+
+- Mobile home LCP is about 3.3s, which is the first-visit intro (a design choice). Repeat visits skip it.
+- Performance: the 3D is split. The desktop hero starts immediately; the phone, ribbon and card scenes load lazily when one nears the viewport, set up over several frames. Mobile blocking time went from 3.9s to 0.1s.
+- Accessibility: axe-core reports no violations. Added a skip link, keyboard focus order, contrast fixes on light surfaces, and SplitText labelling.
+- SEO: metadata and Open Graph, share images in public/og (rendered at /dev/og), the AK icon, sitemap, robots.txt, and Person JSON-LD.
+- iOS Safari (iPhone 16 Pro simulator): everything renders. Deep links and a sticker overlap were fixed.
+- The Play Store link is verified as "Curie Money UPI: Grow & Pay".
+
+Next: step 4, going live. Kashif connects the repo to Vercel and chooses a domain; set NEXT_PUBLIC_SITE_URL once the domain is live.
 
 ## About the site owner (placeholder content)
 

@@ -114,7 +114,6 @@ export const site = {
       summary: "Intern to project lead in under two years. 400+ merged PRs across a live UPI and savings app and the BFF behind it.",
       links: [
         { label: "App Store", href: "https://apps.apple.com/in/app/curie-money/id6446487532" },
-        // TODO: confirm this Play Store link resolves before launch.
         { label: "Play Store", href: "https://play.google.com/store/apps/details?id=com.yield.curie_money" },
       ],
       stats: [
