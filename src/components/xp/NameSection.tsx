@@ -4,7 +4,7 @@ import { site } from "@/content/site";
 export default function NameSection() {
   return (
     <section className="fu-name" id="about" aria-label={`About ${site.shortName}`}>
-      <h2 className="fu-giant cond">
+      <h2 className="fu-giant cond" aria-label={site.shortName}>
         <span>{site.shortName}</span>
         <span className="fu-giant-acc" aria-hidden="true">
           {site.shortName}

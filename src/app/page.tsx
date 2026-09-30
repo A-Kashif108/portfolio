@@ -6,6 +6,7 @@ import Hero from "@/components/xp/Hero";
 import Intro from "@/components/xp/Intro";
 import Melt from "@/components/xp/Melt";
 import NameSection from "@/components/xp/NameSection";
+import PersonJsonLd from "@/components/xp/PersonJsonLd";
 import Ribbons from "@/components/xp/Ribbons";
 import Statement from "@/components/xp/Statement";
 import Work from "@/components/xp/Work";
@@ -17,9 +18,10 @@ import Experience from "@/experience/Experience";
 export default function Home() {
   return (
     <Experience>
+      <PersonJsonLd />
       <Chrome />
       <Intro />
-      <main>
+      <main id="main">
         <Hero />
         <Exploded />
         <Melt id="goo-to-light" direction="to-light" fill={C.paper} edge="#DADCE3" />

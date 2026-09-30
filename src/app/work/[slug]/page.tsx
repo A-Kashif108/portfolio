@@ -14,9 +14,19 @@ export async function generateMetadata(props: PageProps<"/work/[slug]">): Promis
   const { slug } = await props.params;
   const project = site.projects.find((p) => p.slug === slug);
   if (!project) return {};
+  const image = `/og/${project.slug}.png`;
   return {
-    title: `${project.name}, ${site.name}`,
+    title: project.name,
     description: project.summary,
+    alternates: { canonical: `/work/${project.slug}` },
+    openGraph: {
+      type: "article",
+      url: `/work/${project.slug}`,
+      title: `${project.name} | ${site.name}`,
+      description: project.summary,
+      images: [{ url: image, width: 1200, height: 630, alt: project.name }],
+    },
+    twitter: { card: "summary_large_image", title: `${project.name} | ${site.name}`, description: project.summary, images: [image] },
   };
 }
 
@@ -71,7 +81,7 @@ export default async function CaseStudy(props: PageProps<"/work/[slug]">) {
           <dl className="mt-14 grid grid-cols-2 gap-x-8 gap-y-8 border-t-2 border-ink pt-8 md:grid-cols-4">
             {project.stats.map((stat) => (
               <div key={stat.label} className="flex flex-col-reverse gap-2">
-                <dt className="font-mono text-xs leading-snug text-muted">{stat.label}</dt>
+                <dt className="font-mono text-xs leading-snug text-subtle">{stat.label}</dt>
                 <dd className="text-4xl font-semibold tracking-[-0.04em] tabular-nums md:text-5xl">{stat.value}</dd>
               </div>
             ))}
@@ -79,13 +89,13 @@ export default async function CaseStudy(props: PageProps<"/work/[slug]">) {
         )}
 
         <section className="mt-16 grid gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-          <aside className="grid content-start gap-6 font-mono text-sm">
+          <div className="grid content-start gap-6 font-mono text-sm">
             <div>
-              <p className="text-muted">Year</p>
+              <p className="text-subtle">Year</p>
               <p>{project.period ?? project.year}</p>
             </div>
             <div>
-              <p className="text-muted">Stack</p>
+              <p className="text-subtle">Stack</p>
               <p>{project.stack.join(", ")}</p>
             </div>
             {links.length > 0 && (
@@ -99,7 +109,7 @@ export default async function CaseStudy(props: PageProps<"/work/[slug]">) {
                 ))}
               </ul>
             )}
-          </aside>
+          </div>
 
           {project.highlights && (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -115,7 +125,7 @@ export default async function CaseStudy(props: PageProps<"/work/[slug]">) {
 
         {next.slug !== project.slug && (
           <Link href={`/work/${next.slug}`} className="group mt-24 block border-t-2 border-ink pt-6">
-            <span className="font-mono text-xs text-muted">Next project</span>
+            <span className="font-mono text-xs text-subtle">Next project</span>
             <span className="poster-type mt-2 block text-[clamp(48px,9vw,140px)] transition-colors group-hover:text-accent">
               {next.name} <span aria-hidden="true">&rarr;</span>
             </span>

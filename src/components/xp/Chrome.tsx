@@ -12,6 +12,9 @@ function Roll({ text }: { text: string }) {
 export default function Chrome() {
   return (
     <>
+      <a className="fu-skip" href="#main">
+        Skip to content
+      </a>
       <canvas className="fu-views" aria-hidden="true" />
       <div className="fu-grain" aria-hidden="true" />
       <div className="fu-progress" aria-hidden="true" />

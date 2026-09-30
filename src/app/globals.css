@@ -9,6 +9,8 @@
   --paper: #f1f2f5;
   --fog: #e4e2e8;
   --muted: #8e8c95;
+  /* Muted text on light (paper) surfaces; --muted only meets contrast on ink. */
+  --subtle: #5a5d66;
   --accent: #ff5b14;
   --on-accent: #0b0c10;
   color-scheme: dark;
@@ -20,6 +22,7 @@
   --color-paper: var(--paper);
   --color-fog: var(--fog);
   --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
   --color-accent: var(--accent);
   --color-on-accent: var(--on-accent);
   --font-sans: var(--font-geist-sans);

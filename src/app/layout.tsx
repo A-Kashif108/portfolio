@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Archivo, Geist, Geist_Mono } from "next/font/google";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import { site } from "@/content/site";
+import { siteUrl } from "@/lib/siteUrl";
 import "./globals.css";
 import "../styles/experience.css";
 
@@ -22,9 +23,28 @@ const archivo = Archivo({
   axes: ["wdth"],
 });
 
+const title = `${site.name}, ${site.role}`;
+const description = `${site.role}. ${site.tagline}`;
+
 export const metadata: Metadata = {
-  title: `${site.name}, ${site.role}`,
-  description: `${site.role}. ${site.tagline}`,
+  metadataBase: new URL(siteUrl),
+  title: { default: title, template: `%s | ${site.name}` },
+  description,
+  applicationName: site.name,
+  authors: [{ name: site.name, url: siteUrl }],
+  creator: site.name,
+  keywords: [site.name, site.shortName, "software engineer", "Flutter", "Curie Money", "Bengaluru", ...site.stack],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: site.name,
+    title,
+    description,
+    locale: "en_IN",
+    images: [{ url: "/og/home.jpg", width: 1200, height: 630, alt: `${site.name}, ${site.role}` }],
+  },
+  twitter: { card: "summary_large_image", title, description, images: ["/og/home.jpg"] },
 };
 
 export const viewport: Viewport = {

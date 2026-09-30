@@ -8,7 +8,11 @@ export default function Hero() {
   const [first, ...rest] = site.name.split(" ");
   return (
     <section className="fu-hero" id="top">
-      <div className="fu-media">
+      <div
+        className="fu-media"
+        role="img"
+        aria-label="Frosted glass shapes with drifting dots caught inside, moving through caustic light"
+      >
         <picture className="fu-hero-poster">
           <source media="(max-width: 760px)" srcSet="/media/hero-mobile-poster.webp" />
           <img src="/media/hero-desktop-poster.webp" alt="" fetchPriority="high" />
@@ -19,10 +23,7 @@ export default function Hero() {
           <source src="/media/hero-desktop.av1.mp4" type={AV1} />
           <source src="/media/hero-desktop.h264.mp4" type="video/mp4" />
         </video>
-        <canvas
-          className="fu-hero-cv"
-          aria-label="Frosted glass shapes with drifting dots caught inside, moving through caustic light"
-        />
+        <canvas className="fu-hero-cv" aria-hidden="true" />
       </div>
       <div className="fu-hero-in fu-z">
         <h1 className="fu-h1">

@@ -240,7 +240,8 @@ export function initChoreo(root: HTMLElement, state: XpState): () => void {
       // Poster half.
       const first = giant.firstElementChild;
       if (first) {
-        const gChars = SplitText.create(first, { type: "chars", mask: "chars" }).chars;
+        // The h2 carries the accessible name; SplitText must not label the inner span.
+        const gChars = SplitText.create(first, { type: "chars", mask: "chars", aria: "none" }).chars;
         gsap.from(gChars, { yPercent: 105, duration: 1.1, ease: "expo.out", stagger: 0.05, scrollTrigger: { trigger: nameEl, start: "top 72%" } });
       }
       gsap.from(".fu-giant-acc", { autoAlpha: 0, x: -24, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: nameEl, start: "top 60%" } });
