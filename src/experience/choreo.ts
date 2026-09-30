@@ -214,6 +214,8 @@ export function initChoreo(root: HTMLElement, state: XpState): () => void {
           .to(win, { width: vw0 * 1.3, height: vh0 * 1.3, y: 0, borderRadius: 0, duration: 1.0, ease: "expo.inOut" }, 2.25)
           .to(iname, { autoAlpha: 0, y: -vh0 * 0.46, duration: 0.55, ease: "power2.in" }, 2.25);
         heroIn(tl, 2.72);
+        // Phones get the same sequence at 1.75x (about 2s instead of 3.6s), so the hero arrives sooner.
+        if (state.mobile) tl.timeScale(1.75);
       }
       // Without the intro the hero is already on screen from the server HTML, so it isn't re-animated.
 
