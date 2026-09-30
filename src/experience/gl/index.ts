@@ -6,7 +6,6 @@ import { ACCENT, C, RIBBON_STYLES } from "../config";
 import { fontsReady, readFonts } from "../fonts";
 import type { XpState } from "../state";
 import { clamp, eio, eout, lerp, sub } from "../util";
-import { createHero } from "./hero";
 import { Bin, glassMat, makeEnv, slab } from "./kit";
 import { BEV, buildPhone, DEP, HH, HW, RAD } from "./phoneData";
 import {
@@ -36,11 +35,17 @@ const monogram = site.name
   .join("")
   .toUpperCase();
 
+export { initHeroGL } from "./heroGL";
+
+/** Lets the browser paint and handle input between heavy setup steps. */
+const breathe = () => new Promise<void>((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+
 /**
- * Mounts every WebGL piece of the page. Returns a cleanup that disposes all GPU resources.
- * Throws if WebGL is unavailable; the page then stays fully readable without it.
+ * Mounts the below-the-fold WebGL scenes (exploded phone, cloth ribbons, steel card) on one shared canvas.
+ * Setup is spread over several frames so it never blocks the page for long. Resolves to a cleanup, or null
+ * when `cancelled()` turns true mid-setup. Throws if WebGL is unavailable; the page stays readable without it.
  */
-export function initGL(root: HTMLElement, state: XpState): () => void {
+export async function initViewsGL(root: HTMLElement, state: XpState, cancelled: () => boolean): Promise<(() => void) | null> {
   const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T & Element>(s);
   const $$ = <T extends Element = HTMLElement>(s: string) => Array.from(root.querySelectorAll<T & Element>(s));
   const R = state.reduced;
@@ -60,24 +65,16 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
   const DPR = Math.min(isMobile() ? 1.25 : 1.5, window.devicePixelRatio || 1);
   const accColor = new THREE.Color(ACCENT);
 
-  const heroEl = $<HTMLElement>(".fu-hero");
-  const heroCanvas = $<HTMLCanvasElement>(".fu-hero-cv");
   const viewsCanvas = $<HTMLCanvasElement>(".fu-views");
   const ribEl = $<HTMLElement>(".fu-ribbons");
   const contactEl = $<HTMLElement>(".fu-contact");
-  if (!heroEl || !heroCanvas || !viewsCanvas || !ribEl || !contactEl) throw new Error("experience markup missing");
+  if (!viewsCanvas || !ribEl || !contactEl) throw new Error("experience markup missing");
 
-  // Hero: live WebGL on desktop. Phones play the rendered loop video instead (see heroVideo.ts), which is far lighter.
-  const heroGL = !isMobile();
-  const hr = heroGL ? new THREE.WebGLRenderer({ canvas: heroCanvas, antialias: true, alpha: false, powerPreference: "high-performance" }) : null;
   const vr = new THREE.WebGLRenderer({ canvas: viewsCanvas, antialias: true, alpha: true, powerPreference: "high-performance" });
-  hr?.setPixelRatio(DPR);
-  hr?.setClearColor(0x0b0c10, 1);
   vr.setPixelRatio(DPR);
   vr.setClearColor(0x000000, 0);
   vr.autoClear = false;
 
-  const envH = hr ? makeEnv(hr, false, ACCENT) : null;
   const envV = makeEnv(vr, false, ACCENT);
   const envS = makeEnv(vr, true, null);
 
@@ -85,15 +82,16 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
   const pointer: Pointer = { x: 0, y: 0, sx: 0, sy: 0, cx: -9999, cy: -9999, inside: false };
   const views: View[] = [];
 
-  /* ----- Hero loop (desktop only) ----- */
-  const hero = envH ? createHero(envH.texture, { accent: accColor, dpr: DPR, density: 1 }) : null;
-  let heroDrawn = false;
-  const renderHero = (t: number) => {
-    if (!hr || !hero) return;
-    hero.pose(t, pointer.sx, pointer.sy);
-    hr.render(hero.scene, hero.cam);
-    heroDrawn = true;
+  const bins: Bin[] = [];
+  const abort = () => {
+    bins.forEach((b) => b.dispose());
+    [envV, envS].forEach((rt) => rt.dispose());
+    vr.dispose();
+    vr.forceContextLoss();
+    return null;
   };
+  await breathe();
+  if (cancelled()) return abort();
 
   /* ----- Exploded glass phone: frosted slabs with the dot-cloud UI suspended inside each one ----- */
   const phone = (() => {
@@ -265,6 +263,10 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
     };
     return { scene, cam, bin, update };
   })();
+  bins.push(phone.bin);
+  await vr.compileAsync(phone.scene, phone.cam);
+  await breathe();
+  if (cancelled()) return abort();
   const phoneEl = $<HTMLElement>('[data-view="phone"]');
   if (phoneEl) views.push({ el: phoneEl, scene: phone.scene, camera: phone.cam, update: phone.update });
 
@@ -354,6 +356,10 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
       },
     };
   })();
+  bins.push(ribbons.bin);
+  await vr.compileAsync(ribbons.scene, ribbons.cam);
+  await breathe();
+  if (cancelled()) return abort();
   const ribView = $<HTMLElement>('[data-view="ribbons"]');
   if (ribView) views.push({ el: ribView, scene: ribbons.scene, camera: ribbons.cam, update: ribbons.update });
 
@@ -417,26 +423,22 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
       },
     };
   })();
+  bins.push(card.bin);
+  await vr.compileAsync(card.scene, card.cam);
+  await breathe();
+  if (cancelled()) return abort();
   const cardView = $<HTMLElement>('[data-view="card"]');
   if (cardView) views.push({ el: cardView, scene: card.scene, camera: card.cam, update: card.update });
 
   /* ---------- Render loop ---------- */
-  let heroVisible = true;
   let vw = 0;
   let vh = 0;
   const sizeRenderers = () => {
-    if (hr && hero) {
-      hr.setSize(Math.max(1, heroEl.clientWidth), Math.max(1, heroEl.clientHeight), false);
-      hero.cam.aspect = heroEl.clientWidth / Math.max(1, heroEl.clientHeight);
-      hero.cam.updateProjectionMatrix();
-    }
     vw = window.innerWidth;
     vh = window.innerHeight;
     vr.setSize(vw, vh, false);
   };
   sizeRenderers();
-  const io = new IntersectionObserver((en) => en.forEach((e) => (heroVisible = e.isIntersecting)));
-  io.observe(heroEl);
 
   let cleared = false;
   const renderViews = () => {
@@ -478,12 +480,10 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
     if (!R) T += dt;
     pointer.sx = lerp(pointer.sx, pointer.x, 0.06);
     pointer.sy = lerp(pointer.sy, pointer.y, 0.06);
-    if (heroVisible || (R && !heroDrawn)) renderHero(T);
     renderViews();
   };
   gsap.ticker.add(tick);
   root.classList.add("gl-on");
-  if (heroGL) root.classList.add("hero-gl");
 
   /* ---------- Interaction ---------- */
   on(window, "pointermove", (e) => {
@@ -526,13 +526,7 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
     dead = true;
     gsap.ticker.remove(tick);
     off.forEach((f) => f());
-    io.disconnect();
-    root.classList.remove("gl-on", "hero-gl");
-    [hero?.bin, phone.bin, ribbons.bin, card.bin].forEach((b) => b?.dispose());
-    [envH, envV, envS].forEach((rt) => rt?.dispose());
-    [hr, vr].forEach((r) => {
-      r?.dispose();
-      r?.forceContextLoss();
-    });
+    root.classList.remove("gl-on");
+    abort();
   };
 }

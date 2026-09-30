@@ -2,32 +2,64 @@ import { initChoreo } from "./choreo";
 import { startHeroVideo } from "./heroVideo";
 import { createState } from "./state";
 
+type Cleanup = () => void;
+
+/** Runs `fn` once `el` comes within `margin` of the viewport, then waits for an idle moment. */
+function whenNear(el: Element | null, margin: string, fn: () => void): Cleanup {
+  if (!el) return () => {};
+  const hasIdle = typeof window.requestIdleCallback === "function";
+  let pending: number | null = null;
+  const io = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      pending = hasIdle ? window.requestIdleCallback(fn, { timeout: 1200 }) : window.setTimeout(fn, 200);
+    },
+    { rootMargin: margin },
+  );
+  io.observe(el);
+  return () => {
+    io.disconnect();
+    if (pending === null) return;
+    if (hasIdle) window.cancelIdleCallback(pending);
+    else window.clearTimeout(pending);
+  };
+}
+
 /**
- * Boots the page experience on the `.xp` root. The DOM choreography starts immediately; the WebGL scenes
- * (three.js) load in a separate chunk so the intro and text never wait on them. When the hero isn't rendered
- * live (phones, or no WebGL), the pre-rendered loop video plays instead.
+ * Boots the page experience on the `.xp` root.
+ * - DOM choreography (GSAP) starts immediately.
+ * - The desktop hero renders live as soon as the three.js chunk arrives; phones (or no WebGL) play the loop video.
+ * - The phone, ribbon and card scenes are set up lazily, when the exploded section is about to scroll in.
  */
-export function mount(root: HTMLElement): () => void {
+export function mount(root: HTMLElement): Cleanup {
   const state = createState();
   const stopChoreo = initChoreo(root, state);
-  let stopGL: (() => void) | null = null;
-  let stopVideo: (() => void) | null = null;
+  const stops: Cleanup[] = [];
   let dead = false;
 
   const fallbackVideo = () => {
-    if (!dead && !root.classList.contains("hero-gl")) stopVideo = startHeroVideo(root, state.reduced);
+    if (!dead && !root.classList.contains("hero-gl")) stops.push(startHeroVideo(root, state.reduced));
   };
 
   import("./gl")
-    .then(({ initGL }) => {
+    .then(({ initHeroGL, initViewsGL }) => {
       if (dead) return;
-      try {
-        stopGL = initGL(root, state);
-      } catch (err) {
-        // No WebGL: the page stays fully readable, just without the 3D scenes.
-        console.warn("WebGL unavailable, continuing without 3D.", err);
+      if (!state.mobile) {
+        try {
+          stops.push(initHeroGL(root, state));
+        } catch (err) {
+          console.warn("WebGL unavailable, continuing without 3D.", err);
+        }
       }
       fallbackVideo();
+      stops.push(
+        whenNear(root.querySelector(".fu-explode"), "50% 0px", () => {
+          initViewsGL(root, state, () => dead)
+            .then((stop) => stop && (dead ? stop() : stops.push(stop)))
+            .catch((err) => console.warn("WebGL scenes unavailable, continuing without them.", err));
+        }),
+      );
     })
     .catch((err) => {
       console.warn("Could not load 3D scenes.", err);
@@ -36,8 +68,7 @@ export function mount(root: HTMLElement): () => void {
 
   return () => {
     dead = true;
-    stopVideo?.();
-    stopGL?.();
+    stops.splice(0).forEach((stop) => stop());
     stopChoreo();
   };
 }
