@@ -67,7 +67,7 @@ Design and tech references for the portfolio site, with notes on what each one i
 
 **Summary:**
 - **Vengeance UI** is the main source: MIT, and much of it is already GSAP.
-- **Skiper UI** is a pattern library. Take its free GSAP and CSS pieces; Pro ($129) is optional.
+- **Skiper UI** is a pattern library. Take its free GSAP and CSS pieces only. **Pro was skipped (decided 2026-09-30).**
 - **Animmaster** is a visual reference only.
 
 Screenshots are in the session scratchpad under `ui-libs/`.
