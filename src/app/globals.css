@@ -14,12 +14,6 @@
   color-scheme: dark;
 }
 
-/* Accent is still being decided between orange and blue; flip with <html data-accent="blue">. */
-:root[data-accent="blue"] {
-  --accent: #2f5bff;
-  --on-accent: #f1f2f5;
-}
-
 @theme inline {
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);

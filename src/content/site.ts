@@ -1,13 +1,29 @@
-// Placeholder content. Replace with the real bio, projects and links as they arrive.
+// All site copy lives here. Public-safe only: internal work notes stay in the git-ignored private/ folder.
 
 export type Layer = {
   name: string;
   detail: string;
 };
 
+/** Riso poster artwork style generated on canvas for each project card. */
+export type RisoKind = "orbit" | "grid" | "wave" | "net" | "code";
+
+export type Sticker = {
+  label: string;
+  /** Position inside the name section, as percentages. */
+  x: number;
+  y: number;
+  rot: number;
+  accent?: boolean;
+  round?: boolean;
+  /** Extra class used for mobile repositioning. */
+  key?: string;
+};
+
 export type Project = {
   slug: string;
   name: string;
+  riso: RisoKind;
   stack: string[];
   year: number;
   /** Display range for multi-year work, e.g. "2024 to now". Falls back to year. */
@@ -42,6 +58,8 @@ export type Site = {
   links: { label: string; href: string }[];
   stack: string[];
   layers: Layer[];
+  layersNote: string;
+  stickers: Sticker[];
   projects: Project[];
   statement: string;
 };
@@ -64,20 +82,31 @@ export const site = {
   email: "asadullahkashif108@gmail.com",
   links: [
     { label: "GitHub", href: "https://github.com/A-Kashif108" },
-    { label: "LinkedIn", href: "https://www.linkedin.com/in/asadullah-kashif-9a3301208/" },  ],
-  stack: ["Flutter", "Dart", "Go", "C++", "Python", "JavaScript"],
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/asadullah-kashif-9a3301208/" },
+  ],
+  // Six cloth ribbons. Reflects the stack used at Curie Money (Flutter app, TypeScript BFF, native Kotlin and Swift) plus Go.
+  stack: ["Flutter", "Dart", "TypeScript", "Kotlin", "Swift", "Go"],
   layers: [
     { name: "Glass", detail: "Design and motion" },
     { name: "Interface", detail: "Flutter and Dart" },
-    { name: "Logic", detail: "Go services" },
-    { name: "Network", detail: "C++ sockets" },
-    { name: "Power", detail: "Python tooling" },
+    { name: "Logic", detail: "A BFF in TypeScript" },
+    { name: "Network", detail: "UPI payments" },
+    { name: "Power", detail: "Native Kotlin and Swift" },
   ],
-  // Featured projects chosen 2026-09-30. Summaries, roles, stacks and years for Curie Money and Twine are TODO.
+  layersNote: "Five sheets of glass, each holding the part of the stack it runs on.",
+  stickers: [
+    { label: "Flutter", x: 8, y: 22, rot: -8 },
+    { label: "UPI", x: 47, y: 17, rot: 10, accent: true, round: true },
+    { label: "BFF", x: 70, y: 58, rot: 6, key: "k-bff" },
+    { label: "Open to work", x: 22, y: 66, rot: -4, key: "k-open" },
+    { label: "Dart", x: 82, y: 24, rot: -12 },
+  ],
+  // Featured projects chosen 2026-09-30.
   projects: [
     {
       slug: "curie-money",
       name: "Curie Money",
+      riso: "grid",
       stack: ["Flutter", "Dart", "TypeScript", "Node", "Kotlin", "Swift"],
       year: 2026,
       period: "2024 to now",
@@ -124,6 +153,7 @@ export const site = {
     {
       slug: "twine",
       name: "Twine",
+      riso: "wave",
       stack: ["Flutter", "Dart", "Riverpod", "Firebase", "Cloud Functions"],
       year: 2026,
       status: "In private testing",
@@ -164,6 +194,7 @@ export const site = {
     {
       slug: "filecosmos",
       name: "FileCosmos",
+      riso: "orbit",
       stack: ["Flutter", "Mapbox", "Go", "Firebase", "Docker"],
       year: 2023,
       // Kashif plans to rework it; the 2023 build no longer runs.

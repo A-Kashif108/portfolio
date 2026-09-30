@@ -1,36 +1,38 @@
-import Contact from "@/components/sections/Contact";
-import Exploded from "@/components/sections/Exploded";
-import Hero from "@/components/sections/Hero";
-import PosterName from "@/components/sections/PosterName";
-import StackRibbons from "@/components/sections/StackRibbons";
-import Statement from "@/components/sections/Statement";
-import Work from "@/components/sections/Work";
-import { site } from "@/content/site";
+import Chrome from "@/components/xp/Chrome";
+import Contact from "@/components/xp/Contact";
+import Exploded from "@/components/xp/Exploded";
+import Footer from "@/components/xp/Footer";
+import Hero from "@/components/xp/Hero";
+import Intro from "@/components/xp/Intro";
+import Melt from "@/components/xp/Melt";
+import NameSection from "@/components/xp/NameSection";
+import Ribbons from "@/components/xp/Ribbons";
+import Statement from "@/components/xp/Statement";
+import Work from "@/components/xp/Work";
+import { C } from "@/experience/config";
+import Experience from "@/experience/Experience";
 
-// Page flow (see reference.md): dark intro + hero + exploded phone, liquid-lens flip to the light
-// poster half (name, ribbons, work, statement), flip back to dark for the steel-card contact.
+// Page flow (see reference.md): dark intro, hero and exploded phone; liquid lens into the light poster half
+// (name, ribbons, work, statement); liquid lens back to dark for the steel-card contact and the wordmark.
 export default function Home() {
   return (
-    <>
-      <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-between px-5 text-sm mix-blend-difference md:px-10">
-        <a href="#top" className="font-medium">
-          {site.name}
-        </a>
-        <nav className="flex gap-6">
-          <a href="#work">Work</a>
-          <a href="#about">About</a>
-          <a href="#contact">Contact</a>
-        </nav>
-      </header>
+    <Experience>
+      <Chrome />
+      <Intro />
       <main>
         <Hero />
         <Exploded />
-        <PosterName />
-        <StackRibbons />
-        <Work />
-        <Statement />
+        <Melt id="goo-to-light" direction="to-light" fill={C.paper} edge="#DADCE3" />
+        <div className="fu-light">
+          <NameSection />
+          <Ribbons />
+          <Work />
+          <Statement />
+        </div>
+        <Melt id="goo-to-dark" direction="to-dark" fill={C.ink} edge="#15171D" />
         <Contact />
       </main>
-    </>
+      <Footer />
+    </Experience>
   );
 }

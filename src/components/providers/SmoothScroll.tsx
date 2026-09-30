@@ -3,6 +3,7 @@
 import { useEffect, type ReactNode } from "react";
 import Lenis from "lenis";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { setLenis } from "@/lib/lenis";
 
 // Lenis smooth scroll driven by the GSAP ticker so ScrollTrigger stays in sync.
 // Skipped entirely for visitors who prefer reduced motion.
@@ -12,6 +13,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
 
     const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
     lenis.on("scroll", ScrollTrigger.update);
+    setLenis(lenis);
 
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
@@ -19,6 +21,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
 
     return () => {
       gsap.ticker.remove(tick);
+      setLenis(null);
       lenis.destroy();
     };
   }, []);
