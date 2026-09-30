@@ -229,7 +229,7 @@
   .xp .fu-rib-head { bottom: 110px; }
   .xp .fu-ribbons { height: 92vh; min-height: 560px; }
   .xp .fu-stk.k-bff { left: 68% !important; top: 30% !important; }
-  .xp .fu-stk.k-open { left: 12% !important; top: 72% !important; }
+  .xp .fu-stk.k-open { left: 8% !important; top: 88% !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   .xp .fu-grain { animation: none; }
