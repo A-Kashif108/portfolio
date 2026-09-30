@@ -252,6 +252,15 @@ Lighthouse, on the production build:
 - iOS Safari (iPhone 16 Pro simulator): everything renders. Deep links and a sticker overlap were fixed.
 - The Play Store link is verified as "Curie Money UPI: Grow & Pay".
 
+**Live (2026-09-30):** https://portfolio-nu-sand-y0oqjn1arz.vercel.app (Vercel Hobby project `portfolio`, deploys from `main`; Deployment Protection is on for preview URLs).
+
+Live Lighthouse:
+- Desktop home: 100 across the board.
+- Mobile case study: 99.
+- Mobile home: 79 on a first visit (the intro holds LCP at about 4.1s on simulated slow 4G) and 90–94 without the intro (repeat visits and deep links).
+- Accessibility, best practices and SEO: 100 everywhere.
+- robots.txt, the sitemap, canonical and Open Graph URLs all resolve to the live domain automatically.
+
 Next: step 4, going live. Kashif connects the repo to Vercel and chooses a domain; set NEXT_PUBLIC_SITE_URL once the domain is live.
 
 ## About the site owner (placeholder content)
