@@ -100,15 +100,22 @@ export function initChoreo(root: HTMLElement, state: XpState): () => void {
   layout();
 
   /* ---------- Jumps and copy ---------- */
+  // Where to land for a section: its top, or the end of its pin so a pinned scene (the steel card) is complete.
+  const landingY = (target: HTMLElement) => {
+    const pinned = ScrollTrigger.getAll().find((st) => st.trigger === target && st.pin);
+    if (pinned && target.classList.contains("fu-contact")) return pinned.end;
+    return target.getBoundingClientRect().top + window.scrollY;
+  };
   const onClick = (e: MouseEvent) => {
     const a = (e.target as Element | null)?.closest<HTMLElement>("[data-go]");
     if (!a?.dataset.go) return;
     const t = $(a.dataset.go);
     if (!t) return;
     e.preventDefault();
+    const y = landingY(t);
     const lenis = getLenis();
-    if (lenis) lenis.scrollTo(t, { duration: 1.6 });
-    else t.scrollIntoView({ behavior: R ? "auto" : "smooth" });
+    if (lenis) lenis.scrollTo(y, { duration: 1.6 });
+    else window.scrollTo({ top: y, behavior: R ? "auto" : "smooth" });
   };
   root.addEventListener("click", onClick);
   off.push(() => root.removeEventListener("click", onClick));
@@ -297,11 +304,26 @@ export function initChoreo(root: HTMLElement, state: XpState): () => void {
     ScrollTrigger.create({ start: 0, end: "max", onUpdate: (s) => bar && (bar.style.transform = `scaleX(${s.progress.toFixed(4)})`) });
   }, root);
 
+  // Deep links (/#work, or "All work" from a case study): the browser jumps before pins add their scroll length,
+  // so re-align to the target once ScrollTrigger has measured everything. Absolute positions avoid stale Lenis state.
+  const jumpToHash = () => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    const target = id ? document.getElementById(id) : null;
+    if (!target || !root.contains(target)) return;
+    ScrollTrigger.refresh();
+    const y = landingY(target);
+    const lenis = getLenis();
+    if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+    else window.scrollTo(0, y);
+  };
+  timers.push(setTimeout(jumpToHash, 60), setTimeout(jumpToHash, 450));
+
   // Fonts: re-fit type once the real faces are in.
   fontsReady(readFonts()).then(() => {
     if (dead) return;
     layout();
     ScrollTrigger.refresh();
+    jumpToHash();
   });
 
   let roT: ReturnType<typeof setTimeout> | undefined;

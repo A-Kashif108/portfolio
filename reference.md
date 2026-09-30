@@ -224,6 +224,18 @@ Screenshots, recordings and downloaded source are in the session scratchpad unde
   - Taken: kashif.dev, .app, .in, .me, .co, .io.
   - Buy from Cloudflare or Vercel, not GoDaddy, which renews higher.
 
+## Build status
+
+**Step 2 (build) complete, 2026-09-30.** It's on `main`, merged from `step-2-build`.
+- The approved Fusion design is ported into Next.js: `src/components/xp` (server sections) plus `src/experience` (engine).
+- Hero: live WebGL on desktop. Phones get a pre-rendered seamless 10s loop (AV1/H.264) with WebP posters; see `scripts/hero-video/`.
+- Static case-study pages at `/work/[slug]`.
+- The accent is fixed to orange, and the accent toggle is removed.
+- Content change: the stack ribbons and phone layers now reflect Curie Money work (Flutter, Dart, TypeScript BFF, UPI, Kotlin, Swift, Go) instead of the college stack. Needs Kashif's confirmation.
+- Checked in the browser: desktop and mobile, reduced motion, production routes (the capture page 404s in production), and deep links and back navigation to `#work` and `#contact`.
+
+Next: step 3, the quality pass (performance audit, Safari/iOS, accessibility, SEO metadata, OG image, favicon, sitemap).
+
 ## About the site owner (placeholder content)
 
 - **Name:** Asadullah Kashif, who goes by Kashif. Software engineer at Curie Money.

@@ -32,8 +32,8 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-// Runs before first paint: play the welcome intro only with JS on, motion allowed, and once per session.
-const introScript = `try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&!sessionStorage.getItem('xp-intro-seen'))document.documentElement.classList.add('intro')}catch(e){}`;
+// Runs before first paint: play the welcome intro only with JS on, motion allowed, no deep link, once per session.
+const introScript = `try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&!location.hash&&!sessionStorage.getItem('xp-intro-seen'))document.documentElement.classList.add('intro')}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
