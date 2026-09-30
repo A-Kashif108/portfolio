@@ -257,7 +257,7 @@ Lighthouse, on the production build:
 Live Lighthouse:
 - Desktop home: 100 across the board.
 - Mobile case study: 99.
-- Mobile home: 79 on a first visit (the intro holds LCP at about 4.1s on simulated slow 4G) and 90–94 without the intro (repeat visits and deep links).
+- Mobile home: 95 on a first visit with the intro (LCP 1.2–1.9s, warm CDN cache). The intro plays at 1.75x on phones, about 2s. Before that speed-up it scored 79.
 - Accessibility, best practices and SEO: 100 everywhere.
 - robots.txt, the sitemap, canonical and Open Graph URLs all resolve to the live domain automatically.
 
