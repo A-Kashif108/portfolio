@@ -5,17 +5,15 @@ import { getLenis } from "@/lib/lenis";
 import { ACCENT, C, RIBBON_STYLES } from "../config";
 import { fontsReady, readFonts } from "../fonts";
 import type { XpState } from "../state";
-import { clamp, eio, eout, lerp, mulberry, sub } from "../util";
+import { clamp, eio, eout, lerp, sub } from "../util";
+import { createHero } from "./hero";
 import { Bin, glassMat, makeEnv, slab } from "./kit";
 import { BEV, buildPhone, DEP, HH, HW, RAD } from "./phoneData";
 import {
   DOT_CRISP,
   DOT_OPAQUE,
   DOT_VERT,
-  FS_CAUSTIC,
   FS_LAB,
-  HDOT_FRAG,
-  HDOT_VERT,
   RIB_FRAG,
   RIB_H,
   RIB_LEN,
@@ -69,15 +67,17 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
   const contactEl = $<HTMLElement>(".fu-contact");
   if (!heroEl || !heroCanvas || !viewsCanvas || !ribEl || !contactEl) throw new Error("experience markup missing");
 
-  const hr = new THREE.WebGLRenderer({ canvas: heroCanvas, antialias: true, alpha: false, powerPreference: "high-performance" });
+  // Hero: live WebGL on desktop. Phones play the rendered loop video instead (see heroVideo.ts), which is far lighter.
+  const heroGL = !isMobile();
+  const hr = heroGL ? new THREE.WebGLRenderer({ canvas: heroCanvas, antialias: true, alpha: false, powerPreference: "high-performance" }) : null;
   const vr = new THREE.WebGLRenderer({ canvas: viewsCanvas, antialias: true, alpha: true, powerPreference: "high-performance" });
-  hr.setPixelRatio(DPR);
-  hr.setClearColor(0x0b0c10, 1);
+  hr?.setPixelRatio(DPR);
+  hr?.setClearColor(0x0b0c10, 1);
   vr.setPixelRatio(DPR);
   vr.setClearColor(0x000000, 0);
   vr.autoClear = false;
 
-  const envH = makeEnv(hr, false, ACCENT);
+  const envH = hr ? makeEnv(hr, false, ACCENT) : null;
   const envV = makeEnv(vr, false, ACCENT);
   const envS = makeEnv(vr, true, null);
 
@@ -85,117 +85,15 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
   const pointer: Pointer = { x: 0, y: 0, sx: 0, sy: 0, cx: -9999, cy: -9999, inside: false };
   const views: View[] = [];
 
-  /* ----- Hero loop: frosted shapes with drifting dots caught inside, through caustic light (a 10s loop) ----- */
-  const hero = (() => {
-    const bin = new Bin();
-    const scene = new THREE.Scene();
-    const cam = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-    cam.position.set(0, 0, 12);
-    scene.environment = envH.texture;
-    const cm = bin.add(
-      new THREE.ShaderMaterial({
-        uniforms: { uT: { value: 0 }, uA: { value: new THREE.Color(C.ink) }, uB: { value: accColor } },
-        vertexShader: VS_UV,
-        fragmentShader: FS_CAUSTIC,
-      }),
-    );
-    const bg = new THREE.Mesh(bin.add(new THREE.PlaneGeometry(40, 24)), cm);
-    bg.position.z = -6;
-    scene.add(bg);
-    const hu = { uTime: { value: 0 }, uPR: { value: DPR }, uColor: { value: new THREE.Color("#E6E8EE") }, uAccent: { value: accColor } };
-    const hdm = bin.add(new THREE.ShaderMaterial({ uniforms: hu, vertexShader: HDOT_VERT, fragmentShader: HDOT_FRAG }));
-    type Item = { m: THREE.Mesh; base: THREE.Vector3; amp: THREE.Vector3; spin: THREE.Vector3; ph: number };
-    const items: Item[] = [];
-    type Sampler = (r: () => number) => [number, number, number];
-    const add = (
-      geo: THREE.BufferGeometry,
-      mat: THREE.Material,
-      base: THREE.Vector3,
-      amp: THREE.Vector3,
-      spin: THREE.Vector3,
-      ph: number,
-      n: number,
-      sampler: Sampler,
-      seed: number,
-    ) => {
-      const m = new THREE.Mesh(bin.add(geo), bin.add(mat));
-      m.position.copy(base);
-      scene.add(m);
-      items.push({ m, base: base.clone(), amp, spin, ph });
-      const rnd = mulberry(seed);
-      const pos: number[] = [];
-      const rs: number[] = [];
-      const ss: number[] = [];
-      for (let i = 0; i < n; i++) {
-        const p = sampler(rnd);
-        pos.push(p[0], p[1], p[2]);
-        rs.push(rnd() * 2 - 1, rnd() * 2 - 1, rnd() * 2 - 1);
-        ss.push(rnd());
-      }
-      const g = bin.add(new THREE.BufferGeometry());
-      g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(pos), 3));
-      g.setAttribute("aRand", new THREE.BufferAttribute(new Float32Array(rs), 3));
-      g.setAttribute("aSeed", new THREE.BufferAttribute(new Float32Array(ss), 1));
-      const pts = new THREE.Points(g, hdm);
-      pts.frustumCulled = false;
-      m.add(pts);
-    };
-    const TAU = Math.PI * 2;
-    const box = (hx: number, hy: number, hz: number): Sampler => (r) => [(r() * 2 - 1) * hx, (r() * 2 - 1) * hy, (r() * 2 - 1) * hz];
-    const ball = (rad: number): Sampler => (r) => {
-      const u = r() * 2 - 1;
-      const a = r() * TAU;
-      const k = Math.cbrt(r()) * rad;
-      const q = Math.sqrt(1 - u * u);
-      return [Math.cos(a) * q * k, Math.sin(a) * q * k, u * k];
-    };
-    const torus = (Rm: number, t: number): Sampler => (r) => {
-      const a = r() * TAU;
-      const b = r() * TAU;
-      const k = Math.sqrt(r()) * t;
-      return [(Rm + Math.cos(b) * k) * Math.cos(a), (Rm + Math.cos(b) * k) * Math.sin(a), Math.sin(b) * k];
-    };
-    const capsule = (rad: number, half: number): Sampler => (r) => {
-      const a = r() * TAU;
-      const k = Math.sqrt(r()) * rad;
-      return [Math.cos(a) * k, (r() * 2 - 1) * half, Math.sin(a) * k];
-    };
-    const disk = (rad: number, hh: number): Sampler => (r) => {
-      const a = r() * TAU;
-      const k = Math.sqrt(r()) * rad;
-      return [Math.cos(a) * k, (r() * 2 - 1) * hh, Math.sin(a) * k];
-    };
-    const V = THREE.Vector3;
-    const few = isMobile() ? 0.6 : 1;
-    add(slab(1.05, 2.15, 0.34, 0.2, 0.06), glassMat({ roughness: 0.14, thickness: 1.2 }), new V(2.4, 0.2, 0.5), new V(0.12, 0.22, 0), new V(0.18, 1, 0.05), 0, Math.round(520 * few), box(0.86, 1.92, 0.06), 3);
-    add(new THREE.TorusGeometry(0.95, 0.32, 48, 96), glassMat({ roughness: 0.03, thickness: 1.4 }), new V(-0.6, 1.9, -1.2), new V(0.25, 0.18, 0), new V(1, 1, 0), 1.3, Math.round(360 * few), torus(0.95, 0.2), 5);
-    add(new THREE.CapsuleGeometry(0.42, 1.5, 12, 32), glassMat({ roughness: 0.22, thickness: 1.1 }), new V(4.7, -1.6, -0.6), new V(0.15, 0.3, 0), new V(0, 1, 1), 2.2, Math.round(220 * few), capsule(0.28, 0.72), 7);
-    add(new THREE.SphereGeometry(0.85, 64, 32), glassMat({ roughness: 0.05, thickness: 1.6 }), new V(0.5, -1.6, 1.2), new V(0.2, 0.2, 0), new V(0, 1, 0), 3.4, Math.round(420 * few), ball(0.62), 11);
-    add(slab(0.7, 0.7, 0.22, 0.24, 0.07), glassMat({ roughness: 0.3, thickness: 1.0 }), new V(-3.4, 2.4, -2), new V(0.18, 0.25, 0), new V(1, 1, 0), 4.1, Math.round(160 * few), box(0.54, 0.54, 0.07), 13);
-    add(new THREE.CylinderGeometry(0.7, 0.7, 0.14, 64), glassMat({ roughness: 0.1, thickness: 0.6 }), new V(5.4, 2.4, -1.5), new V(0.2, 0.15, 0), new V(1, 0, 1), 5.3, Math.round(200 * few), disk(0.55, 0.035), 17);
-    let drawn = false;
-    return {
-      cam,
-      bin,
-      get drawn() {
-        return drawn;
-      },
-      render(t: number) {
-        const ph = ((t % 10) / 10) * Math.PI * 2;
-        cm.uniforms.uT.value = t;
-        hu.uTime.value = t;
-        for (const it of items) {
-          it.m.position.set(it.base.x + it.amp.x * Math.sin(ph + it.ph), it.base.y + it.amp.y * Math.sin(ph + it.ph * 1.7), it.base.z);
-          it.m.rotation.set(it.spin.x * ph + it.ph, it.spin.y * ph + it.ph * 0.5, it.spin.z * ph);
-        }
-        cam.position.x = pointer.sx * 0.5;
-        cam.position.y = -pointer.sy * 0.35;
-        cam.lookAt(0.8, 0.2, 0);
-        hr.render(scene, cam);
-        drawn = true;
-      },
-    };
-  })();
+  /* ----- Hero loop (desktop only) ----- */
+  const hero = envH ? createHero(envH.texture, { accent: accColor, dpr: DPR, density: 1 }) : null;
+  let heroDrawn = false;
+  const renderHero = (t: number) => {
+    if (!hr || !hero) return;
+    hero.pose(t, pointer.sx, pointer.sy);
+    hr.render(hero.scene, hero.cam);
+    heroDrawn = true;
+  };
 
   /* ----- Exploded glass phone: frosted slabs with the dot-cloud UI suspended inside each one ----- */
   const phone = (() => {
@@ -527,9 +425,11 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
   let vw = 0;
   let vh = 0;
   const sizeRenderers = () => {
-    hr.setSize(Math.max(1, heroEl.clientWidth), Math.max(1, heroEl.clientHeight), false);
-    hero.cam.aspect = heroEl.clientWidth / Math.max(1, heroEl.clientHeight);
-    hero.cam.updateProjectionMatrix();
+    if (hr && hero) {
+      hr.setSize(Math.max(1, heroEl.clientWidth), Math.max(1, heroEl.clientHeight), false);
+      hero.cam.aspect = heroEl.clientWidth / Math.max(1, heroEl.clientHeight);
+      hero.cam.updateProjectionMatrix();
+    }
     vw = window.innerWidth;
     vh = window.innerHeight;
     vr.setSize(vw, vh, false);
@@ -578,11 +478,12 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
     if (!R) T += dt;
     pointer.sx = lerp(pointer.sx, pointer.x, 0.06);
     pointer.sy = lerp(pointer.sy, pointer.y, 0.06);
-    if (heroVisible || (R && !hero.drawn)) hero.render(T);
+    if (heroVisible || (R && !heroDrawn)) renderHero(T);
     renderViews();
   };
   gsap.ticker.add(tick);
   root.classList.add("gl-on");
+  if (heroGL) root.classList.add("hero-gl");
 
   /* ---------- Interaction ---------- */
   on(window, "pointermove", (e) => {
@@ -626,12 +527,12 @@ export function initGL(root: HTMLElement, state: XpState): () => void {
     gsap.ticker.remove(tick);
     off.forEach((f) => f());
     io.disconnect();
-    root.classList.remove("gl-on");
-    [hero.bin, phone.bin, ribbons.bin, card.bin].forEach((b) => b.dispose());
-    [envH, envV, envS].forEach((rt) => rt.dispose());
+    root.classList.remove("gl-on", "hero-gl");
+    [hero?.bin, phone.bin, ribbons.bin, card.bin].forEach((b) => b?.dispose());
+    [envH, envV, envS].forEach((rt) => rt?.dispose());
     [hr, vr].forEach((r) => {
-      r.dispose();
-      r.forceContextLoss();
+      r?.dispose();
+      r?.forceContextLoss();
     });
   };
 }
