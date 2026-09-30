@@ -1,6 +1,6 @@
 # Portfolio
 
-Personal portfolio of Kashif Asadullah. Built with Next.js 16, Tailwind v4, GSAP, Lenis and React Three Fiber.
+Personal portfolio of Asadullah Kashif. Built with Next.js 16, Tailwind v4, GSAP, Lenis and React Three Fiber.
 
 ## Develop
 

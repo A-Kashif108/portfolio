@@ -185,9 +185,48 @@ Screenshots, recordings and downloaded source are in the session scratchpad unde
   5. **Curved flip back to dark:** the steel business card and contact.
 - **Visual system:** one orange accent across both halves. Geist for the dark half; Archivo condensed 900 for the Poster display type.
 
+## Content decisions (2026-09-30)
+
+- **Featured projects:** Curie Money work, Twine, FileCosmos.
+- **Public email** (steel card and contact): asadullahkashif108@gmail.com.
+- **Photo:** none.
+- **Bio:** option B was chosen from 5 drafts: "I build apps layer by layer. The interface in Flutter, a BFF that shapes the data, payments over UPI. At Curie Money I work across all of it, and I care most about the layer you feel: the details. IIT Roorkee CSE graduate, based in Bengaluru, India."
+  - Voice: confident and minimal.
+  - Audience: recruiters, founders and clients, and engineers.
+  - Values: all of them, but details and polish most.
+- **Curie Money timeline:** intern from October 2024, full-time Software Engineer from 15 June 2025 (corrected from July). LinkedIn is https://www.linkedin.com/in/asadullah-kashif-9a3301208/ . The dates haven't been checked against LinkedIn yet (it returns HTTP 999 to automated reads). Project details come from a separate Claude session that has work access.
+- **Projects** (details in `src/content/site.ts`):
+  - **Curie Money:** researched by the Curie session. Notes are in the git-ignored `private/`.
+  - **Twine:** researched from `~/project/twine`. Framed as "built for my partner and me", shown as "In private testing" with no link, and the poster uses the logo art only.
+  - **FileCosmos:**
+    - A 2023 five-person team project over about 3 weeks. Kashif set up and built the Flutter app (map, upload, app flow, backend wiring).
+    - Shown as "Being rebuilt"; Kashif plans to rework it.
+    - Security: the repo still contains a Firebase admin SDK key in `backend/`. Kashif was told to revoke it in Google Cloud.
+- **Resume:** there isn't one, so the Resume link is removed (2026-09-30). The links are GitHub and LinkedIn only.
+- **Step 1 (content) complete on 2026-09-30.**
+- **Availability line** (kept separate from the bio): "Open to full-time roles and freelance projects."
+- **Facts:**
+  - Education: B.Tech CSE, IIT Roorkee, graduated 2025.
+  - Location: Bengaluru.
+  - Experience: 1–2 years including internships.
+  - Background: started in mobile (Flutter), now works full stack including BFF and UPI at Curie Money.
+- **Name:** the full name is **Asadullah Kashif** (first name Asadullah), and he goes by **Kashif**. Use the full name in the title, metadata and footer, and "Kashif" for the poster name, the greeting and the wordmark.
+- **Domain: decide before launch.** Build on vercel.app until then.
+  - Prices are Cloudflare at-cost, checked 2026-09-30. All options below were available.
+  - Shortlist:
+    - akashif.com ($10.46/yr flat, recommended: reads "A. Kashif" and matches GitHub A-Kashif108)
+    - kashif.page ($10.20)
+    - akashif.dev ($12.20)
+    - kashif.work ($10.20)
+    - kashif.fyi ($5.20)
+    - akashif.in (about $6)
+  - Avoid, because renewal jumps after year one: .site, .space, .tech. Expensive outright: .sh, .ink.
+  - Taken: kashif.dev, .app, .in, .me, .co, .io.
+  - Buy from Cloudflare or Vercel, not GoDaddy, which renews higher.
+
 ## About the site owner (placeholder content)
 
-- **Name:** Kashif Asadullah. Software engineer at Curie Money.
+- **Name:** Asadullah Kashif, who goes by Kashif. Software engineer at Curie Money.
 - **GitHub:** https://github.com/A-Kashif108
 - **Stack seen on GitHub:** Flutter/Dart, Go, C++, Python, JavaScript.
 - **Candidate projects:** FileCosmos, game_space, Zoi, Network_Project, Codelog, Twine.

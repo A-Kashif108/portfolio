@@ -2,7 +2,7 @@
 
 # Portfolio
 
-Kashif Asadullah's portfolio site. The design references, decisions and page flow are in `reference.md`; read it before any design work.
+Portfolio site for Asadullah Kashif, who goes by Kashif. The design references, decisions and page flow are in `reference.md`; read it before any design work.
 
 ## Stack
 - Next.js 16 (App Router, `src/`), React 19, TypeScript, Tailwind v4 (tokens in `src/app/globals.css`).

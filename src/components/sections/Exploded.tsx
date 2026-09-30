@@ -7,6 +7,8 @@ export default function Exploded() {
   return (
     <section id="about" className="surface-dark px-5 py-32 md:px-10">
       <h2 className="text-4xl font-medium tracking-[-0.04em] md:text-6xl">Every app is layers.</h2>
+      <p className="mt-6 max-w-[62ch] text-base text-muted md:text-lg">{site.bio}</p>
+      <p className="mt-3 font-mono text-xs text-paper">{site.availability}</p>
       <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
         {site.layers.map((layer) => (
           <li key={layer.name} className="border-t border-paper/15 pt-4">
